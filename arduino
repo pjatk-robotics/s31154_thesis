@@ -7,7 +7,6 @@ MPU6050 mpu;
 bool dmpReady = false;
 uint8_t fifoBuffer[64];
 
-// orientation / motion vars
 Quaternion q;
 VectorFloat gravity;
 VectorInt16 aa;

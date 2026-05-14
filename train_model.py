@@ -106,4 +106,4 @@ model.save("cnn_lstm_model.h5")
 joblib.dump(scaler, "../scaler.pkl")
 joblib.dump(le, "../label_encoder.pkl")
 
-print("\nCNN+LSTM model, scaler, and label encoder saved")
+print("\nmodel saved")

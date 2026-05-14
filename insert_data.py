@@ -75,7 +75,6 @@ for subject_id in range(1, 26):
 
         sign_name = os.path.splitext(sign_csv)[0]
         csv_file = subject_folder+ "/"+str(sign_csv)
-
         df = pd.read_csv(csv_file)
 
         for _,row in df.iterrows():

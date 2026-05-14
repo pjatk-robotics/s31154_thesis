@@ -30,7 +30,7 @@ model = load_model("cnn_lstm_model.h5")
 scaler = joblib.load("../scaler.pkl")
 le = joblib.load("../label_encoder.pkl")
 
-WINDOW_SIZE = 150  # number of rows per prediction (~1.5 sec at 100 Hz)
+WINDOW_SIZE = 150
 buffer = deque(maxlen=WINDOW_SIZE)
 
 def parse_line(line: str):
@@ -67,7 +67,6 @@ def read_serial(ser):
                 fv = extract_features(parsed)
                 buffer.append(fv)
 
-                # Predict if we have enough data
                 if len(buffer) == WINDOW_SIZE:
                     X_window = np.array(buffer)
                     X_window_scaled = scaler.transform(X_window)
