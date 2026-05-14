@@ -7,7 +7,7 @@ from tensorflow.keras.layers import Conv1D, LSTM, Dense
 from tensorflow.keras.utils import to_categorical
 from sklearn.metrics import classification_report, confusion_matrix
 
-DB_PATH = "../data/my_database.db"
+DB_PATH = "data/my_database.db"
 TRAIN_TABLES = [f"subject_{i}" for i in range(1, 25)]
 TEST_TABLE = "subject_25"
 

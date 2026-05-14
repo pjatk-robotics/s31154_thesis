@@ -63,7 +63,7 @@ def read_serial(ser):
             line = ser.readline().decode(errors="ignore").strip()
             parsed = parse_line(line)
             if parsed:
-                print(parsed)
+                #print(parsed)
                 fv = extract_features(parsed)
                 buffer.append(fv)
 
