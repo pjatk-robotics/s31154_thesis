@@ -1,0 +1,119 @@
+#include "Wire.h"
+#include "I2Cdev.h"
+#include "MPU6050_6Axis_MotionApps20.h"
+
+MPU6050 mpu;
+
+bool dmpReady = false;
+uint8_t fifoBuffer[64];
+
+// orientation / motion vars
+Quaternion q;
+VectorFloat gravity;
+VectorInt16 aa;
+VectorInt16 aaReal;
+VectorInt16 aaWorld;
+VectorInt16 gyroRaw;
+
+const float ACC_SCALE = 9.80665 / 16384.0;
+const float GYRO_SCALE = 1.0 / 131.0;
+int muxPin = 3; // D3 steruje muxem
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+
+  mpu.initialize();
+  mpu.setFullScaleAccelRange(MPU6050_ACCEL_FS_2);
+
+  uint8_t devStatus = mpu.dmpInitialize();
+
+  // Calibration (optional??????????)
+  mpu.setXGyroOffset(220);
+  mpu.setYGyroOffset(76);
+  mpu.setZGyroOffset(-85);
+  mpu.setZAccelOffset(1788);
+  pinMode(muxPin, OUTPUT);
+  if (devStatus == 0) {
+    mpu.setDMPEnabled(true);
+    dmpReady = true;
+  } else {
+    Serial.println("DMP init failed");
+  }
+}
+unsigned long lastTime = 0;
+const unsigned long dtMicros = 10000; // 10 ms = 100 Hz
+int readMux(bool selectF4) {
+  digitalWrite(muxPin, selectF4);
+  delayMicroseconds(50);
+  return analogRead(A0);
+}
+void loop() {
+  if (!dmpReady) return;
+
+  unsigned long now = micros();
+  if (now - lastTime < dtMicros) return; // wait until 10ms passed
+  lastTime = now;
+
+  if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
+    // --- QUATERNION ---
+    mpu.dmpGetQuaternion(&q, fifoBuffer);
+
+    // --- RAW ACCEL ---
+    int16_t ax, ay, az;
+    mpu.getAcceleration(&ax, &ay, &az);
+    aa.x = ax; aa.y = ay; aa.z = az;
+
+    // --- GRAVITY VECTOR ---
+    mpu.dmpGetGravity(&gravity, &q);
+
+    // --- LINEAR ACCEL (BODY FRAME) ---
+    mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
+
+    // --- WORLD-FRAME ACCEL ---
+    mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
+
+    // --- RAW GYRO ---
+    VectorInt16 gyroDMP;
+    mpu.dmpGetGyro(&gyroDMP, fifoBuffer);
+
+    // --- FLEX SENSORS ---
+    int f0 = readMux(1); // pierwszy flex (F0)
+    int f4 = readMux(0); // ostatni flex (F4)
+
+    int f1 = analogRead(A1);
+    int f2 = analogRead(A2);
+    int f3 = analogRead(A3);
+
+    // --- ACC MAG ---
+    float acc_mag = sqrt(
+      sq(aa.x * ACC_SCALE) +
+      sq(aa.y * ACC_SCALE) +
+      sq(aa.z * ACC_SCALE)
+    );
+
+    // --- PRINT DATA ---
+    Serial.print("ACC_MAG="); Serial.print(acc_mag);
+    Serial.print(" | Qw="); Serial.print(q.w);
+    Serial.print(" Qx="); Serial.print(q.x);
+    Serial.print(" Qy="); Serial.print(q.y);
+    Serial.print(" Qz="); Serial.print(q.z);
+    Serial.print(" | GYRx="); Serial.print(gyroDMP.x * GYRO_SCALE);
+    Serial.print(" GYRy="); Serial.print(gyroDMP.y * GYRO_SCALE);
+    Serial.print(" GYRz="); Serial.print(gyroDMP.z * GYRO_SCALE);
+    Serial.print(" | ACCx="); Serial.print(aa.x * ACC_SCALE);
+    Serial.print(" ACCy="); Serial.print(aa.y * ACC_SCALE);
+    Serial.print(" ACCz="); Serial.print(aa.z * ACC_SCALE);
+    Serial.print(" | ACCx_body="); Serial.print(aaReal.x * ACC_SCALE);
+    Serial.print(" ACCy_body="); Serial.print(aaReal.y * ACC_SCALE);
+    Serial.print(" ACCz_body="); Serial.print(aaReal.z * ACC_SCALE);
+    Serial.print(" | ACCx_world="); Serial.print(aaWorld.x * ACC_SCALE);
+    Serial.print(" ACCy_world="); Serial.print(aaWorld.y * ACC_SCALE);
+    Serial.print(" ACCz_world="); Serial.print(aaWorld.z * ACC_SCALE);
+    Serial.print("| F1="); Serial.print(f0);
+    Serial.print(" F2="); Serial.print(f1);
+    Serial.print(" F3="); Serial.print(f2);
+    Serial.print(" F4="); Serial.print(f3);
+    Serial.print(" F5="); Serial.print(f4);
+    Serial.println();
+  }
+}
