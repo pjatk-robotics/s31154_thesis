@@ -1,0 +1,6 @@
+The goal of this project is to design and build a wearable glove capable of recognizing and interpreting basic sign language gestures using sensor data and machine learning. The glove will collect real-time data from flex sensors and an inertial measurement unit (IMU), process it through a trained model, and output the corresponding text or spoken word.
+When a user performs a gesture, the glove will measure finger bending and hand orientation, convert this data into numerical features, and classify the sign using an AI model trained on datasets for each sign. The recognized gesture will then be converted into text and read aloud using a text-to-speech system, enabling communication between a deaf person and a non-sign-language speaker.
+The system will consist of both a hardware and a software component:
+The hardware will include flex sensors (to capture finger bending) and an IMU module (to measure hand rotation and movement), all connected to a microcontroller such as the Arduino Uno or Arduino Nano.
+The software side will involve collecting and preprocessing sensor data in Arduino IDE, transmitting it to a computer, and classifying it in Python.
+<img width="5712" height="4284" alt="IMG_2488" src="https://github.com/user-attachments/assets/1f4b6372-65d1-4ce9-bf32-f19fc5feef56" />
