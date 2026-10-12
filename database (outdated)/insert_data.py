@@ -7,7 +7,7 @@ import json
 import sys
 
 try:
-    with open("config.json") as f:
+    with open("../config.json") as f:
         config = json.load(f)
     database_path = config["database_path"]
 
